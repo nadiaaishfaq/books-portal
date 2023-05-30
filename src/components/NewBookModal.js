@@ -1,51 +1,63 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { createBook, updateBook } from "../api/index";
 
-function NewBookModal() {
+function NewBookModal({modal, books, setBooks, setModal,  currentId, setCurrentId}) {
   const [values, setValues] = useState({
     title: "",
     author: "",
-    no_of_pages: "",
-    published_at: "",
+    no_of_pages: null,
+    published_at: null,
   });
-  
+
+  const singleBook = books.find((book) => book._id === currentId)  
+ 
   const handleSubmit = async (e) => {
+    console.log('submit data')
+        e.preventDefault();
     try {
-      e.preventDefault();
-      console.log(values)
-      const response = await axios.post(
-        "http://localhost:8080/api/book/newBook", values
-      );
-      console.log(response.data)
+      if (currentId !== 0) {
+        console.log(singleBook._id)
+        const response = updateBook(values, currentId)
+  setBooks([ ...books,
+           books.map((book) =>
+            book._id === response?.data?._id ? response.data : book
+          )])
+      } else {
+        const response = await createBook(values)
+        setValues([...values, response.data])
+      }
+      setModal(false)
+      setCurrentId(0)
     } catch (error) {
-      console.log(error.response.data);
+      console.log(error);
     }
   };
+
 
   return (
     <>
       <button
         type="button"
-        class="btn btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#myModal"
+        className="btn btn-primary"
+        onClick={() => setModal(true)}
       >
         Add New Book
       </button>
 
-      <div class="modal" id="myModal">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title">Add New Book</h4>
+      <div className={modal === true ? "d-block" : "d-none"}>
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h4 className="modal-title">{currentId !== 0 ? "Update Book Details" : "Add new Book"}</h4>
               <button
                 type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
+                className="btn-close"
+                onClick={() => setModal(false)}
               ></button>
             </div>
 
-            <div class="modal-body">
+            <div className="modal-body">
               <form onSubmit={handleSubmit}>
                 <div className="mb-3 mt-3">
                   <label htmlFor="title" className="form-label">
@@ -55,7 +67,8 @@ function NewBookModal() {
                     type="text"
                     className="form-control"
                     placeholder="Enter Book Title"
-                    value={values.title}
+                    defaultValue={currentId ? singleBook.title : ""}
+                    // value={values.title}
                     onChange={(e) =>
                       setValues({
                         ...values,
@@ -70,7 +83,7 @@ function NewBookModal() {
                     type="text"
                     className="form-control"
                     placeholder="Enter Author's Name"
-                    value={values.author}
+                    defaultValue={currentId ? singleBook.author : ""}
                     onChange={(e) =>
                       setValues({
                         ...values,
@@ -85,7 +98,7 @@ function NewBookModal() {
                     type="integer"
                     className="form-control"
                     placeholder="Enter No. of Pages"
-                    value={values.no_of_pages}
+                    defaultValue={currentId ? singleBook.no_of_pages : ""}
                     onChange={(e) =>
                       setValues({
                         ...values,
@@ -100,7 +113,7 @@ function NewBookModal() {
                     type="date"
                     className="form-control"
                     placeholder="Enter email"
-                    value={values.published_at}
+                    defaultValue={currentId ? singleBook.published_at : ""}
                     onChange={(e) =>
                       setValues({
                         ...values,
@@ -110,7 +123,7 @@ function NewBookModal() {
                   />
                   <button
                     type="submit"
-                    class="btn btn-primary mt-3"
+                    className="btn btn-primary mt-3"
                     data-bs-dismiss="modal"
                   >
                     Submit

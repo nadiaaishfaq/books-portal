@@ -1,25 +1,35 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Modal from "./Modal";
-import NewBookModal from "./NewBookModal";
-import DeleteModal from "./DeleteModal";
+import { allBooks, deleteBook } from "../api/index";
 
-function Table() {
-  const [books, setBooks] = useState([]);
+
+function Table({setModal, setCurrentId, books, setBooks}) {
   const fetchBooks = async () => {
-    const { data } = await axios.get("http://localhost:8080/api/book/getBooks");
+    const { data } = await allBooks();
     setBooks(data?.books);
-    console.log(books);
+    // console.log(books);
   };
 
   useEffect(() => {
     fetchBooks();
   }, [books]);
+
+  const onDelete = async(id) => {
+  try {
+    await deleteBook(id)
+  } catch (error) {
+    console.log(error)
+  }
+  }
+
+  const onEdit = (id) =>{
+    setCurrentId(id)
+    setModal(true)
+  }
+
   return (
     <>
       <div className="container mt-3">
-        <h2>CRUD Operations</h2>
-       <NewBookModal/>
         <table className="table table-hover table-bordered mt-3">
           <thead className="table-dark">
             <tr>
@@ -41,9 +51,25 @@ function Table() {
                     <td>{b.author}</td>
                     <td>{b.no_of_pages}</td>
                     <td>{b.published_at}</td>
-                    {/* <td><Modal key={b._id}/></td> */}
-                    <td><DeleteModal key={b._id}/></td>
-
+                    <td>
+                    
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={()=>onEdit(b._id)}
+                      >
+                        Edit
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => onDelete(b._id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
