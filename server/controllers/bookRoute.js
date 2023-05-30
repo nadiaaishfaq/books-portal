@@ -61,7 +61,7 @@ route.get("/getBooks", async (req, res) => {
   }
 });
 
-//update-book
+//update-book detail
 route.put("/updateBook/:id", async (req, res) => {
   try {
     const { title, author, no_of_pages, published_at } = req.body;
